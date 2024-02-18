@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>心智圖</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+
+  <body>
+    <div id="app">
+      <div class="box">
+        <div class="container" ref="container">
+          <div class="tree" ref="tree">
+            <div class="left">
+              <tree-node
+                :node="tree.left"
+                :class-name="nodeLeft"
+                @update="update"
+                @get-curr-drop-node="getCurrDropNode"
+                :curr-drop-node="dropNode"
+              ></tree-node>
+            </div>
+            <div id="mid" @dblclick="updateMidNode" style="margin-bottom: 10px">
+              <h3
+                ref="mid"
+                @drop="dropMidNode"
+                @dragenter="dragenter"
+                @dragover="dragover"
+                @dragleave="dragleave"
+              >
+                {{tree.val}}
+              </h3>
+            </div>
+            <div class="right">
+              <tree-node
+                :node="tree.right"
+                :class-name="nodeRight"
+                @update="update"
+                @get-curr-drop-node="getCurrDropNode"
+                :curr-drop-node="dropNode"
+              ></tree-node>
+            </div>
+          </div>
+        </div>
+      </div>
+      <svg style="position: absolute; top: 0; left: 0; z-index: -1" ref="svg">
+        <path
+          v-for="(path, index) in paths"
+          :key="index"
+          :d="path"
+          stroke="#000"
+          fill="none"
+          stroke-width="2"
+          :style="{zIndex:index}"
+        />
+        <!-- <rect
+          v-for="(box, index) in textRects"
+          :key="index"
+          :x="box.x"
+          :y="box.y"
+          :width="box.width"
+          :height="box.height"
+          fill="#fff"
+        /> -->
+      </svg>
+    </div>
+
+    <script src="./libary/loadsh.js"></script>
+    <script src="./common.js"></script>
+    <script src="./libary/vue.js"></script>
+    <script src="./TreeNode.js"></script>
+    <script src="./TreeData.js"></script>
+    <script>
+      const app = Vue.createApp({
+        data() {
+          return {
+            paths: [],
+            circles: [],
+            textRects: [],
+            nodeLeft: "node-left node-item",
+            nodeRight: "node-right node-item",
+            closeInput: false,
+            tree: {},
+            recordIndex: 0,
+            dropNode: {},
+            repeatPath: new Set(),
+            init: true,
+          };
+        },
+        watch: {
+          tree: {
+            handler(newVal, oldVal) {
+              this.$nextTick(() => {
+                this.resetView();
+              });
+            },
+            deep: true,
+          },
+        },
+        methods: {
+          update(target) {
+            let history = JSON.parse(
+              sessionStorage.getItem(`tree_${this.recordIndex}`)
+            );
+
+            if (target && target.length) {
+              let curr = this.tree[target[1]].children;
+              let id = target[0];
+
+              const deleteTarget = (node, parent) => {
+                if (id == node.id) {
+                  let index = parent.findIndex((item) => item.id == id);
+                  parent.splice(index, 1);
+                  deleted = true;
+                  return;
+                }
+                if (node.children && node.children.length) {
+                  for (let i = 0; i < node.children.length; i++) {
+                    deleteTarget(node.children[i], node.children);
+                  }
+                }
+                return;
+              };
+              for (let i = 0; i < curr.length; i++) {
+                deleteTarget(curr[i], curr);
+              }
+            }
+            //設定紀錄
+            if (!_.isEqual(history, this.tree)) {
+              this.recordIndex++;
+              sessionStorage.setItem(
+                `tree_${this.recordIndex}`,
+                JSON.stringify(this.tree)
+              );
+            }
+          },
+          updateMidNode() {
+            let midNode = this.$refs.mid;
+            let input = document.createElement("input");
+            input.value = this.tree.val;
+            midNode.appendChild(input);
+            input.classList.add("inputNode");
+            input.focus();
+
+            const debounceKeyUp = this.debounce((e) => {
+              if (e.code == "Enter") {
+                if (
+                  this.tree.left.children.length >=
+                  this.tree.right.children.length
+                ) {
+                  this.tree.right.children.push({
+                    id: generateUniqueId(),
+                    val: "new",
+                    children: [],
+                  });
+                } else {
+                  this.tree.left.children.push({
+                    id: generateUniqueId(),
+                    val: "new",
+                    children: [],
+                  });
+                }
+
+                // this.$nextTick(() => {
+                //   this.resetView();
+                // });
+              }
+            }, 800);
+
+            input.addEventListener("keyup", (e) => {
+              debounceKeyUp(e);
+            });
+
+            input.addEventListener("blur", (e) => {
+              this.tree.val = input.value;
+              e.target.parentNode.removeChild(e.target);
+            });
+          },
+          dropMidNode(e) {
+            let direction = this.dropNode.className.includes("node-left")
+              ? "left"
+              : "right";
+            let obj = _.cloneDeep(this.dropNode);
+
+            if (direction == "left") {
+              this.tree.right.children.push(obj);
+            } else {
+              this.tree.left.children.push(obj);
+            }
+            this.update([this.dropNode.id, direction]);
+            e.target.classList.remove("target_node");
+          },
+          dragover(event) {
+            event.preventDefault();
+          },
+          dragenter(event) {
+            event.target.classList.add("target_node");
+          },
+          dragleave(event) {
+            event.target.classList.remove("target_node");
+          },
+          getCurrDropNode(node) {
+            this.dropNode = node;
+            // console.log('this.dropNode',this.dropNode)
+          },
+          findTitle(node) {
+            if (node.tagName == "H3") return node;
+
+            while (node.tagName != "H3") {
+              node = node.children[0];
+            }
+
+            return node;
+          },
+          drawLine(childNode, parentNode) {
+            // console.log('childNode', this.findTitle(childNode.children[0]))
+            // console.log("childNode", childNode);
+            let direction = "";
+
+            if (childNode.className.includes("node-right")) {
+              direction = "right";
+            }
+
+            if (childNode.className.includes("node-left")) {
+              direction = "left";
+            }
+
+            let childDirection = direction == "left" ? "right" : "left";
+            // console.log("direction", direction);
+
+            //計算容器
+            let childRect = this.findTitle(
+              childNode.children[0]
+            ).getBoundingClientRect();
+            let parentRect = this.findTitle(
+              parentNode.children[0]
+            ).getBoundingClientRect();
+
+            // 计算路径
+            let parentMidY = Math.floor(
+              parentRect.top + parentRect.height / 2 + window.scrollY
+            );
+            let childMidY = Math.floor(
+              childRect.top + childRect.height / 2 + window.scrollY
+            ); //因為有使用margin-bootom
+
+            let parentMidX = Math.floor(parentRect[direction] + window.scrollX);
+            let childMidX = Math.floor(
+              childRect[childDirection] + window.scrollX
+            );
+
+            let midX = Math.floor((parentMidX + childMidX) / 2);
+            let midY = Math.floor((parentMidY + childMidY) / 2);
+            let path = "";
+
+            let M = parentMidX + " " + parentMidY;
+
+            if (!this.repeatPath.has(M)) {
+              path =
+                `M ${parentMidX} ${parentMidY} ` + // 从父节点开始
+                `L ${midX} ${parentMidY} ` + // 水平到中间点
+                `L ${midX} ${childMidY} ` + // 垂直到子节点的水平位置
+                `L ${childMidX} ${childMidY}`; // 水平到子节点
+
+              this.repeatPath.add(M);
+            } else {
+              path =
+                `M ${midX} ${parentMidY} ` + // 水平到中间点
+                `L ${midX} ${childMidY} ` + // 垂直到子节点的水平位置
+                `L ${childMidX} ${childMidY}`; // 水平到子节点
+            }
+
+            // 添加路径到路径数组中
+            this.paths.push(path);
+            // console.log(this.repeatPath);
+
+            // 添加圆形标记(因為左邊方向的關係線會壓到item，所以用rect蓋住)
+            let rectX =
+              Math.floor((childRect.right + childRect.left) / 2) +
+              window.scrollX;
+            let rectY =
+              Math.floor(
+                (childRect.top +
+                  childRect.height / 2 +
+                  childRect.top +
+                  childRect.height / 2) /
+                  2
+              ) + window.scrollY;
+
+            this.textRects.push({
+              x: rectX - 162 / 2,
+              y: rectY - 52 / 2,
+              width: 162,
+              height: 45,
+            });
+          },
+          recursion(node, parentNode, mid) {
+            //有mid代表是中間的node，中間的node要取node[0]
+            if (!node[1] && !mid) return;
+            let childNode = mid ? node[0].children : node[1].children;
+            // console.log('childNode',childNode)
+            for (let i = 0; i < childNode.length; i++) {
+              this.recursion(childNode[i], childNode);
+            }
+            if (parentNode) {
+              let nodes = mid ? node[0].children : node[1].children;
+              // console.log('node',node[0].children.length)
+              if (nodes.length > 1) {
+                for (let i = 0; i < nodes.length; i++) {
+                  this.drawLine(nodes[i], parentNode);
+                }
+              } else if (mid) {
+                //沒有className代表抓到父層div需在往下抓(結構問題，節點只有一顆時畫抓到外層div)
+                if (node[0] && node[0].className) {
+                  this.drawLine(node[0], parentNode);
+                } else {
+                  this.drawLine(node[0].children[0], parentNode);
+                }
+              } else {
+                if (node[1] && node[1].className) {
+                  this.drawLine(node[1], parentNode);
+                } else {
+                  this.drawLine(node[1].children[0], parentNode);
+                }
+              }
+            }
+          },
+          initView() {
+            let nodesLeft = document.getElementsByClassName("node-left");
+            let nodesRight = document.getElementsByClassName("node-right");
+            let nodesMid = document.getElementById("mid");
+
+            for (let i = 0; i < nodesLeft.length; i++) {
+              this.recursion(nodesLeft[i].children, nodesLeft[i]);
+            }
+
+            for (let i = 0; i < nodesRight.length; i++) {
+              this.recursion(nodesRight[i].children, nodesRight[i]);
+            }
+
+            if (nodesLeft.length > 1) {
+              this.recursion(nodesLeft[0].children, nodesMid, true);
+            }
+            if (nodesRight.length > 1) {
+              this.recursion(nodesRight[0].children, nodesMid, true);
+            }
+
+            let midNodeData = nodesMid.getBoundingClientRect();
+            this.textRects.push({
+              x: midNodeData.x + window.scrollX,
+              y: midNodeData.y + window.scrollY,
+              width: 152,
+              height: 45,
+            });
+
+            // this.$refs.svg.style.width = window.screen.width + window.scrollX;
+            // this.$refs.svg.style.height = window.screen.height + window.scrollY;
+
+            //設定svg寬度
+            if (this.$refs.tree.clientWidth > document.body.clientWidth) {
+              this.$refs.svg.style.width =
+                this.$refs.tree.clientWidth +
+                this.$refs.tree.clientWidth / 2 +
+                "px";
+            } else {
+              this.$refs.svg.style.width = document.body.clientWidth + "px";
+            }
+            //設定svg高度
+            this.$refs.svg.style.height =
+              window.screen.height + window.scrollY + "px";
+          },
+
+          debounce(fn, time) {
+            let timer;
+
+            return function (e) {
+              clearTimeout(timer);
+              timer = setTimeout(() => {
+                fn(e);
+              }, time);
+            };
+          },
+          resetView() {
+            this.repeatPath.clear();
+            this.paths = [];
+            this.textRects = [];
+            this.initView();
+            // this.$refs.container.style.width = this.$refs.tree.clientWidth  + 'px'
+          },
+        },
+        created() {
+          this.tree = data.tree;
+        },
+        mounted() {
+          sessionStorage.setItem(
+            `tree_${this.recordIndex}`,
+            JSON.stringify(this.tree)
+          );
+          this.initView();
+          this.init = false;
+          const debounceReasizeEven = this.debounce(() => {
+            this.$nextTick(() => {
+              this.resetView();
+            });
+          }, 100);
+          window.addEventListener("resize", () => {
+            console.log('resize')
+            debounceReasizeEven();
+          });
+
+          window.addEventListener("scroll", () => {
+            debounceReasizeEven();
+          });
+
+          // 返回
+          window.addEventListener("keydown", (event) => {
+            // 在这里检查是否按下了 CTRL 键和 Z 键
+            if (event.ctrlKey && event.key === "z") {
+              if (this.recordIndex > 0) {
+                this.recordIndex--;
+                let history = sessionStorage.getItem(
+                  `tree_${this.recordIndex}`
+                );
+                this.tree = JSON.parse(history);
+                // console.log(this.recordIndex);
+                this.$nextTick(() => {
+                  this.resetView();
+                });
+              }
+            }
+          });
+        },
+      });
+      app.component("tree-node", TreeNode);
+      app.mount("#app");
+    </script>
+  </body>
+</html>
