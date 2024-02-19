@@ -2,7 +2,7 @@ const TreeNode = {
   template: `
 <div :class="className" > 
 
-    <h3  v-if='node.val' @dblclick='updateNode(node,$event)'  draggable="true" @drop='dropNode' @dragover="dragover" @dragstart="drogStart" @dragleave="dragleave" @dragenter="dragenter">{{ node.val }}</h3>
+    <h3  v-if='node.val' @dblclick='updateNode(node,$event)'  draggable="true" @drop='dropNode' @dragover="dragover" @dragstart="drogStart" @dragleave="dragleave" @dragenter="dragenter" v-html="node.val"></h3>
     <div v-if="node.children && node.children.length > 0">
 
         <tree-node v-for="child in node.children" :key="child.val" :node="child" :class-name="className" @update="update" @get-curr-drop-node="getCurrDropNode"
@@ -34,14 +34,23 @@ const TreeNode = {
   methods: {
     updateNode(node, e) {
       // this.closeUpdate()
-      if (e.target.children[0] && e.target.children[0].tagName == "INPUT")
+      if (e.target.children[0] && e.target.children[0].tagName == "TEXTAREA")
         return;
-      let input = document.createElement("input");
-      input.value = node.val;
+      let input = document.createElement("textarea");
+      input.value = node.val.replace(/<br\s*\/?>/g, "\n");
       input.classList.add("inputNode");
 
       const debounceKeyUp = this.debounce((e) => {
-        // console.log(e.code);
+        if (e.code === "Enter" && e.shiftKey) {
+          input.value += "\n";
+
+          console.log(input.value);
+
+          // e.target.parentElement.style.height = e.target.scrollHeight + "px";
+          // e.target.parentElement.parentElement.style.height =
+          //   e.target.scrollHeight + "px";
+          return;
+        }
         if (e.code == "Enter") {
           // node.val = input.value.trim() ? input.value : "請輸入";
           this.$emit("update");
@@ -64,14 +73,37 @@ const TreeNode = {
         }
       }, 800);
 
-      input.addEventListener("keyup", (e) => {
+      input.addEventListener("keydown", (e) => {
         debounceKeyUp(e);
       });
+
       input.addEventListener("blur", (e) => {
-        node.val = input.value.trim() ? input.value : "請輸入";
-        this.$emit("update");
-        // console.log('target',e.target.parentNodW)
+        // node.val = input.value.trim() ? input.value : "請輸入";
+        input.value = input.value.trim() ? input.value : "請輸入";
+        var formattedContent = input.value.replace(/\n/g, "<br>");
+        node.val = formattedContent;
         e.target.parentNode.removeChild(e.target);
+        this.$emit("update")
+      });
+
+      input.addEventListener("input", (e) => {
+        const minHeight = 44;
+        // node.val = e.target.value
+        if (e.target.value.length === 0) {
+          // 如果内容为空，则重置高度为最小高度
+          e.target.style.height = minHeight + "px";
+        } else {
+          // 内容不为空，根据内容设置高度
+          e.target.style.height = "auto";
+          e.target.parentElement.style.height = "auto";
+          e.target.parentElement.parentElement.style.height = "auto";
+          
+
+          e.target.style.height =  e.target.scrollHeight +  "px";
+          e.target.parentElement.style.height = e.target.scrollHeight + "px";
+          e.target.parentElement.parentElement.style.height =
+            e.target.scrollHeight + "px";
+        }
       });
 
       e.target.appendChild(input);
@@ -80,7 +112,7 @@ const TreeNode = {
     drogStart(e) {
       e.stopPropagation();
       if (this.node.id) {
-        e.target.classList.add("current")
+        e.target.classList.add("current");
         this.node.className = this.className;
         this.node.event = e;
         this.$emit("getCurrDropNode", this.node);
@@ -118,10 +150,13 @@ const TreeNode = {
       e.stopPropagation();
       let event = this.currDropNode.event;
       //禁止父層放到子層 && 自己不能放自己
-      if (event.target.parentNode.contains(e.target) && event.target != e.target) {
+      if (
+        event.target.parentNode.contains(e.target) &&
+        event.target != e.target
+      ) {
         alert("無效操作");
         e.target.classList.remove("target_node");
-        
+
         return;
       }
       if (this.currDropNode.id != this.node.id) {

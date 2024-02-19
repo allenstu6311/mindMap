@@ -243,9 +243,11 @@
             );
             let childMidY = Math.floor(
               childRect.top + childRect.height / 2 + window.scrollY
-            ); //因為有使用margin-bootom
+            );
 
-            let parentMidX = Math.floor(parentRect[direction] + window.scrollX);
+            let parentMidX = Math.floor(
+              parentRect[direction] + 1 + window.scrollX
+            );
             let childMidX = Math.floor(
               childRect[childDirection] + window.scrollX
             );
@@ -405,7 +407,7 @@
             });
           }, 100);
           window.addEventListener("resize", () => {
-            console.log('resize')
+            console.log("resize");
             debounceReasizeEven();
           });
 
