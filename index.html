@@ -28,8 +28,9 @@
                 @dragenter="dragenter"
                 @dragover="dragover"
                 @dragleave="dragleave"
-                v-html="tree.val"
+                
               >
+              <span v-html="tree.val"></span>
               </h3>
             </div>
             <div class="right">
@@ -140,6 +141,7 @@
             input.value = this.tree.val.replace(/<br\s*\/?>/g, "\n");
             midNode.appendChild(input);
             input.classList.add("inputNode");
+            // input.style.height = e.target.style.height
             input.focus();
 
             const debounceKeyUp = _.debounce((e) => {
@@ -183,11 +185,11 @@
                 e.target.parentElement.style.height = "auto";
                 e.target.parentElement.parentElement.style.height = "auto";
 
-                e.target.style.height = e.target.scrollHeight + "px";
+                e.target.style.height = e.target.scrollHeight + 10 + "px";
                 e.target.parentElement.style.height =
-                  e.target.scrollHeight + "px";
+                  e.target.scrollHeight+ "px";
                 e.target.parentElement.parentElement.style.height =
-                  e.target.scrollHeight + "px";
+                  e.target.scrollHeight+ "px";
               }
             });
 

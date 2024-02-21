@@ -2,7 +2,9 @@ const TreeNode = {
   template: `
 <div :class="className" > 
 
-    <h3  v-if='node.val' @dblclick='updateNode(node,$event)'  draggable="true" @drop='dropNode' @dragover="dragover" @dragstart="drogStart" @dragleave="dragleave" @dragenter="dragenter" v-html="node.val"></h3>
+    <h3  v-if='node.val' @dblclick='updateNode(node,$event)'  draggable="true" @drop='dropNode' @dragover="dragover" @dragstart="drogStart" @dragleave="dragleave" @dragenter="dragenter">
+    <span  v-html="node.val"></span>
+    </h3>
     <div v-if="node.children && node.children.length > 0">
 
         <tree-node v-for="child in node.children" :key="child.val" :node="child" :class-name="className" @update="update" @get-curr-drop-node="getCurrDropNode"
@@ -40,7 +42,7 @@ const TreeNode = {
       // 到輸入框把<br>轉成\t
       input.value = node.val.replace(/<br\s*\/?>/g, "\n");
       input.classList.add("inputNode");
-
+      input.style.height = e.target.style.height
       const debounceKeyUp = _.debounce((e) => {
         if (e.code === "Enter" && e.shiftKey) {
           input.value += "\n";
