@@ -81,17 +81,17 @@
 let data = {
   tree: {
     id: 0,
-    val: "核心",
+    val: "請輸入",
     left: {
         children: [
-            { id: 1, val: "子节点 1", children: [] },
-            { id: 2, val: "子节点 2", children: [] },
+            { id: 1, val: "請輸入", children: [] },
+            { id: 2, val: "請輸入", children: [] },
         ]
     },
     right:{
         children:[
-            { id: 3, val: "子节点 3", children: [] },
-            { id: 4, val: "子节点 4", children: [] },
+            { id: 3, val: "請輸入", children: [] },
+            { id: 4, val: "請輸入", children: [] },
         ]
     }
   },
