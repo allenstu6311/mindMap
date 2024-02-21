@@ -49,6 +49,7 @@ const TreeNode = {
    
 
       const debounceKeyUp = _.debounce((e) => {
+        // console.log(e)
         if (e.code === "Enter" && e.shiftKey) {
           input.value += "\n";
           return;
@@ -61,7 +62,7 @@ const TreeNode = {
           this.$emit("update", [node.id, direction]);
         }
 
-        if (e.code == "Enter") {
+        if (e.ctrlKey && e.code == "Enter") {
           this.node.children.push({
             id: generateUniqueId(),
             val: "new",
