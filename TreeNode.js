@@ -35,14 +35,19 @@ const TreeNode = {
   },
   methods: {
     updateNode(node, e) {
-      // this.closeUpdate()
       if (e.target.children[0] && e.target.children[0].tagName == "TEXTAREA")
         return;
       let input = document.createElement("textarea");
       // 到輸入框把<br>轉成\t
       input.value = node.val.replace(/<br\s*\/?>/g, "\n");
       input.classList.add("inputNode");
-      input.style.height = e.target.style.height
+
+      setTimeout(() => {
+        input.style.height = 'auto'
+        input.style.height =  input.scrollHeight + e.target.clientHeight + 'px'
+      }, 0);
+   
+
       const debounceKeyUp = _.debounce((e) => {
         if (e.code === "Enter" && e.shiftKey) {
           input.value += "\n";
@@ -146,7 +151,7 @@ const TreeNode = {
       //禁止父層放到子層 && 自己不能放自己
       if (
         event.target.parentNode.contains(e.target) &&
-        event.target != e.target
+        event.target != e.target.parentElement
       ) {
         alert("無效操作");
         e.target.classList.remove("target_node");

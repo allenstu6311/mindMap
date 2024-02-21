@@ -28,9 +28,8 @@
                 @dragenter="dragenter"
                 @dragover="dragover"
                 @dragleave="dragleave"
-                
               >
-              <span v-html="tree.val"></span>
+                <span v-html="tree.val"></span>
               </h3>
             </div>
             <div class="right">
@@ -185,18 +184,18 @@
                 e.target.parentElement.style.height = "auto";
                 e.target.parentElement.parentElement.style.height = "auto";
 
-                e.target.style.height = e.target.scrollHeight + 10 + "px";
+                e.target.style.height = e.target.scrollHeight + "px";
                 e.target.parentElement.style.height =
-                  e.target.scrollHeight+ "px";
+                  e.target.scrollHeight + "px";
                 e.target.parentElement.parentElement.style.height =
-                  e.target.scrollHeight+ "px";
+                  e.target.scrollHeight + "px";
               }
             });
 
             input.addEventListener("blur", (e) => {
               input.value = input.value.trim() ? input.value : "請輸入";
               // 到html把\t轉成<br>
-              var formattedContent =  input.value.replace(/\n/g, "<br>");
+              var formattedContent = input.value.replace(/\n/g, "<br>");
               this.tree.val = formattedContent;
               e.target.parentNode.removeChild(e.target);
             });
@@ -219,7 +218,9 @@
             event.preventDefault();
           },
           dragenter(event) {
-            event.target.classList.add("target_node");
+            if (event.target.tagName == "H3") {
+              event.target.classList.add("target_node");
+            }
           },
           dragleave(event) {
             event.target.classList.remove("target_node");
@@ -269,9 +270,7 @@
               childRect.top + childRect.height / 2 + window.scrollY
             );
 
-            let parentMidX = Math.floor(
-              parentRect[direction] + 1 + window.scrollX
-            );
+            let parentMidX = Math.floor(parentRect[direction] + window.scrollX);
             let childMidX = Math.floor(
               childRect[childDirection] + window.scrollX
             );
@@ -279,7 +278,7 @@
             let midX = Math.floor((parentMidX + childMidX) / 2);
             let midY = Math.floor((parentMidY + childMidY) / 2);
             let path = "";
-            let M = parentMidX + " " + parentMidY;//出發的位置
+            let M = parentMidX + " " + parentMidY; //出發的位置
 
             if (!this.repeatPath.has(M)) {
               path =
@@ -298,7 +297,6 @@
 
             // 添加路径到路径数组中
             this.paths.push(path);
-
 
             // 添加圆形标记(因為左邊方向的關係線會壓到item，所以用rect蓋住)
             let rectX =
@@ -393,7 +391,7 @@
             }
             //設定svg高度
             this.$refs.svg.style.height =
-              window.screen.height + window.scrollY + "px";
+              document.body.clientHeight + window.scrollY + "px";
           },
           resetView() {
             this.repeatPath.clear();
