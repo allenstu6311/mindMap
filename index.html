@@ -28,8 +28,8 @@
                 @dragenter="dragenter"
                 @dragover="dragover"
                 @dragleave="dragleave"
+                v-html="tree.val"
               >
-                {{tree.val}}
               </h3>
             </div>
             <div class="right">
@@ -85,7 +85,6 @@
             recordIndex: 0,
             dropNode: {},
             repeatPath: new Set(),
-            init: true,
           };
         },
         watch: {
@@ -137,13 +136,18 @@
           },
           updateMidNode() {
             let midNode = this.$refs.mid;
-            let input = document.createElement("input");
-            input.value = this.tree.val;
+            let input = document.createElement("textarea");
+            input.value = this.tree.val.replace(/<br\s*\/?>/g, "\n");
             midNode.appendChild(input);
             input.classList.add("inputNode");
             input.focus();
 
-            const debounceKeyUp = this.debounce((e) => {
+            const debounceKeyUp = _.debounce((e) => {
+              if (e.code === "Enter" && e.shiftKey) {
+                input.value += "\n";
+                return;
+              }
+
               if (e.code == "Enter") {
                 if (
                   this.tree.left.children.length >=
@@ -161,19 +165,37 @@
                     children: [],
                   });
                 }
-
-                // this.$nextTick(() => {
-                //   this.resetView();
-                // });
               }
             }, 800);
 
-            input.addEventListener("keyup", (e) => {
+            input.addEventListener("keydown", (e) => {
               debounceKeyUp(e);
             });
 
+            input.addEventListener("input", (e) => {
+              const minHeight = 44;
+              if (e.target.value.length === 0) {
+                // 如果内容为空，则重置高度为最小高度
+                e.target.style.height = minHeight + "px";
+              } else {
+                // 内容不为空，根据内容设置高度
+                e.target.style.height = "auto";
+                e.target.parentElement.style.height = "auto";
+                e.target.parentElement.parentElement.style.height = "auto";
+
+                e.target.style.height = e.target.scrollHeight + "px";
+                e.target.parentElement.style.height =
+                  e.target.scrollHeight + "px";
+                e.target.parentElement.parentElement.style.height =
+                  e.target.scrollHeight + "px";
+              }
+            });
+
             input.addEventListener("blur", (e) => {
-              this.tree.val = input.value;
+              input.value = input.value.trim() ? input.value : "請輸入";
+              // 到html把\t轉成<br>
+              var formattedContent =  input.value.replace(/\n/g, "<br>");
+              this.tree.val = formattedContent;
               e.target.parentNode.removeChild(e.target);
             });
           },
@@ -255,8 +277,7 @@
             let midX = Math.floor((parentMidX + childMidX) / 2);
             let midY = Math.floor((parentMidY + childMidY) / 2);
             let path = "";
-
-            let M = parentMidX + " " + parentMidY;
+            let M = parentMidX + " " + parentMidY;//出發的位置
 
             if (!this.repeatPath.has(M)) {
               path =
@@ -275,7 +296,7 @@
 
             // 添加路径到路径数组中
             this.paths.push(path);
-            // console.log(this.repeatPath);
+
 
             // 添加圆形标记(因為左邊方向的關係線會壓到item，所以用rect蓋住)
             let rectX =
@@ -372,17 +393,6 @@
             this.$refs.svg.style.height =
               window.screen.height + window.scrollY + "px";
           },
-
-          debounce(fn, time) {
-            let timer;
-
-            return function (e) {
-              clearTimeout(timer);
-              timer = setTimeout(() => {
-                fn(e);
-              }, time);
-            };
-          },
           resetView() {
             this.repeatPath.clear();
             this.paths = [];
@@ -400,14 +410,12 @@
             JSON.stringify(this.tree)
           );
           this.initView();
-          this.init = false;
-          const debounceReasizeEven = this.debounce(() => {
+          const debounceReasizeEven = _.debounce(() => {
             this.$nextTick(() => {
               this.resetView();
             });
           }, 100);
           window.addEventListener("resize", () => {
-            console.log("resize");
             debounceReasizeEven();
           });
 
@@ -425,7 +433,6 @@
                   `tree_${this.recordIndex}`
                 );
                 this.tree = JSON.parse(history);
-                // console.log(this.recordIndex);
                 this.$nextTick(() => {
                   this.resetView();
                 });

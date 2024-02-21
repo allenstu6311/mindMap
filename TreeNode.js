@@ -37,23 +37,14 @@ const TreeNode = {
       if (e.target.children[0] && e.target.children[0].tagName == "TEXTAREA")
         return;
       let input = document.createElement("textarea");
+      // 到輸入框把<br>轉成\t
       input.value = node.val.replace(/<br\s*\/?>/g, "\n");
       input.classList.add("inputNode");
 
-      const debounceKeyUp = this.debounce((e) => {
+      const debounceKeyUp = _.debounce((e) => {
         if (e.code === "Enter" && e.shiftKey) {
           input.value += "\n";
-
-          console.log(input.value);
-
-          // e.target.parentElement.style.height = e.target.scrollHeight + "px";
-          // e.target.parentElement.parentElement.style.height =
-          //   e.target.scrollHeight + "px";
           return;
-        }
-        if (e.code == "Enter") {
-          // node.val = input.value.trim() ? input.value : "請輸入";
-          this.$emit("update");
         }
 
         if (e.code == "Delete") {
@@ -78,8 +69,9 @@ const TreeNode = {
       });
 
       input.addEventListener("blur", (e) => {
-        // node.val = input.value.trim() ? input.value : "請輸入";
         input.value = input.value.trim() ? input.value : "請輸入";
+
+        // 到html把\t轉成<br>
         var formattedContent = input.value.replace(/\n/g, "<br>");
         node.val = formattedContent;
         e.target.parentNode.removeChild(e.target);
@@ -173,16 +165,16 @@ const TreeNode = {
         this.$emit("update", [this.currDropNode.id, direction]);
       }
     },
-    debounce(fn, time) {
-      let timer;
+    // debounce(fn, time) {
+    //   let timer;
 
-      return function (e) {
-        clearTimeout(timer);
-        timer = setTimeout(() => {
-          fn(e);
-        }, time);
-      };
-    },
+    //   return function (e) {
+    //     clearTimeout(timer);
+    //     timer = setTimeout(() => {
+    //       fn(e);
+    //     }, time);
+    //   };
+    // },
     getCurrDropNode(node) {
       this.$emit("getCurrDropNode", node);
     },
