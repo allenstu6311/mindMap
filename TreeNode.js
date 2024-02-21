@@ -129,7 +129,7 @@ const TreeNode = {
 
       if (
         this.currDropNode.id != this.node.id &&
-        e.target.tagName == "H3" &&
+        e.target.tagName == "H3"&&
         !e.target.className.includes("target_node")
       ) {
         let checkChild = this.node.children.every(

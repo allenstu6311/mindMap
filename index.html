@@ -215,14 +215,17 @@
             e.target.classList.remove("target_node");
           },
           dragover(event) {
+            event.stopPropagation();
             event.preventDefault();
           },
           dragenter(event) {
+            event.stopPropagation();
             if (event.target.tagName == "H3") {
               event.target.classList.add("target_node");
             }
           },
           dragleave(event) {
+            event.stopPropagation();
             event.target.classList.remove("target_node");
           },
           getCurrDropNode(node) {
