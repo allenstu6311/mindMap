@@ -228,7 +228,10 @@
             event.stopPropagation();
             if (event.target.tagName == "H3") {
               event.target.classList.add("target_node");
+            }else if(event.target.tagName == "SPAN"){
+              event.target.parentElement.classList.add("target_node");
             }
+          
           },
           dragleave(event) {
             event.stopPropagation();

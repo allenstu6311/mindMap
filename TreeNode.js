@@ -1,9 +1,8 @@
 const TreeNode = {
   template: `
 <div :class="className" > 
-
     <h3  v-if='node.val' @dblclick='updateNode(node,$event)'  draggable="true" @drop='dropNode' @dragover="dragover" @dragstart="drogStart" @dragleave="dragleave" @dragenter="dragenter">
-    <span  v-html="node.val"></span>
+    <span v-html="node.val"></span>
     </h3>
     <div v-if="node.children && node.children.length > 0">
 
@@ -43,10 +42,9 @@ const TreeNode = {
       input.classList.add("inputNode");
 
       setTimeout(() => {
-        input.style.height = 'auto'
-        input.style.height =  input.scrollHeight + e.target.clientHeight + 'px'
+        input.style.height = "auto";
+        input.style.height = input.scrollHeight + e.target.clientHeight + "px";
       }, 0);
-   
 
       const debounceKeyUp = _.debounce((e) => {
         // console.log(e)
@@ -83,7 +81,7 @@ const TreeNode = {
         var formattedContent = input.value.replace(/\n/g, "<br>");
         node.val = formattedContent;
         e.target.parentNode.removeChild(e.target);
-        this.$emit("update")
+        this.$emit("update");
       });
 
       input.addEventListener("input", (e) => {
@@ -97,9 +95,8 @@ const TreeNode = {
           e.target.style.height = "auto";
           e.target.parentElement.style.height = "auto";
           e.target.parentElement.parentElement.style.height = "auto";
-          
 
-          e.target.style.height =  e.target.scrollHeight +  "px";
+          e.target.style.height = e.target.scrollHeight + "px";
           e.target.parentElement.style.height = e.target.scrollHeight + "px";
           e.target.parentElement.parentElement.style.height =
             e.target.scrollHeight + "px";
@@ -127,24 +124,28 @@ const TreeNode = {
     },
     dragenter(e) {
       e.stopPropagation();
-
-      if (
-        this.currDropNode.id != this.node.id &&
-        e.target.tagName == "H3"&&
-        !e.target.className.includes("target_node")
-      ) {
+  
+      if (this.currDropNode.id != this.node.id) {
+        // 判斷是否為當前節點的子層項目
         let checkChild = this.node.children.every(
           (item) => item.id != this.currDropNode.id
         );
 
-        if (checkChild && this.currDropNode.id != this.node.id) {
-          e.target.classList.add("target_node");
+        if (checkChild) {
+          if (e.target.tagName == "H3") {
+            e.target.classList.add("target_node");
+          } else if (e.target.tagName == "SPAN") {
+            e.target.parentElement.classList.add("target_node");
+          }
         }
       }
     },
     dragleave(e) {
       e.stopPropagation();
-      e.target.classList.remove("target_node");
+      if(e.target.className.includes("target_node")){
+        e.target.classList.remove("target_node");
+      }
+      // e.target.classList.remove("target_node");
     },
     dropNode(e) {
       e.stopPropagation();
