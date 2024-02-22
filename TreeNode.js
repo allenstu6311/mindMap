@@ -174,16 +174,6 @@ const TreeNode = {
         this.$emit("update", [this.currDropNode.id, direction]);
       }
     },
-    // debounce(fn, time) {
-    //   let timer;
-
-    //   return function (e) {
-    //     clearTimeout(timer);
-    //     timer = setTimeout(() => {
-    //       fn(e);
-    //     }, time);
-    //   };
-    // },
     getCurrDropNode(node) {
       this.$emit("getCurrDropNode", node);
     },

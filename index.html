@@ -426,7 +426,11 @@
             this.$nextTick(() => {
               this.resetView();
             });
-          }, 10);
+            setTimeout(()=>{
+              this.resetView();
+            },200)
+         
+          }, 100);
           window.addEventListener("resize", () => {
             debounceReasizeEven();
           });
