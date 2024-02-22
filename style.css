@@ -130,11 +130,16 @@ h3{
     outline: none;
 }
 
-/*  */
 .target_node{
     background-color: skyblue;
 }
 
 .blank{
     margin-bottom: 10px;
+}
+
+.control{
+    position: absolute;
+    left: 0;
+    top: 0;
 }

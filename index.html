@@ -64,6 +64,11 @@
           fill="#fff"
         /> -->
       </svg>
+      <div class="control">
+        <p>Ctrl + Enter 新增新節點 、 Ctrl + Shift 換行<br>
+          可直接抓取節點移動，顯示藍色即可直接插入
+        </p>
+      </div>
     </div>
 
     <script src="./libary/loadsh.js"></script>
@@ -417,7 +422,7 @@
             this.$nextTick(() => {
               this.resetView();
             });
-          }, 100);
+          }, 10);
           window.addEventListener("resize", () => {
             debounceReasizeEven();
           });
