@@ -2,7 +2,7 @@ const TreeNode = {
   template: `
 <div :class="className" > 
     <h3  v-if='node.val' @dblclick='updateNode(node,$event)'  draggable="true" @drop='dropNode' @dragover="dragover" @dragstart="drogStart" @dragleave="dragleave" @dragenter="dragenter">
-    <span v-html="node.val"></span>
+    <span  draggable="false" v-html="node.val"></span>
     </h3>
     <div v-if="node.children && node.children.length > 0">
 
@@ -27,6 +27,7 @@ const TreeNode = {
       currNode: {},
       pushed: [],
       droged: false,
+      dragIn:false
     };
   },
   mounted() {
@@ -142,7 +143,7 @@ const TreeNode = {
     },
     dragleave(e) {
       e.stopPropagation();
-      if(e.target.className.includes("target_node")){
+      if(e.target.className.includes("target_node") && e.targe.tagName == "H3"){
         e.target.classList.remove("target_node");
       }
       // e.target.classList.remove("target_node");
