@@ -143,7 +143,7 @@ const TreeNode = {
     },
     dragleave(e) {
       e.stopPropagation();
-      if(e.target.className.includes("target_node") && e.targe.tagName == "H3"){
+      if(e.target.className.includes("target_node")){
         e.target.classList.remove("target_node");
       }
       // e.target.classList.remove("target_node");
