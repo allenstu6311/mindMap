@@ -254,84 +254,86 @@
             return node;
           },
           drawLine(childNode, parentNode) {
-            // console.log('childNode', this.findTitle(childNode.children[0]))
-            // console.log("childNode", childNode);
-            let direction = "";
+              // console.log('childNode', this.findTitle(childNode.children[0]))
+              // console.log("childNode", childNode);
+              let direction = "";
 
-            if (childNode.className.includes("node-right")) {
-              direction = "right";
-            }
+              if (childNode.className.includes("node-right")) {
+                direction = "right";
+              }
 
-            if (childNode.className.includes("node-left")) {
-              direction = "left";
-            }
+              if (childNode.className.includes("node-left")) {
+                direction = "left";
+              }
 
-            let childDirection = direction == "left" ? "right" : "left";
-            // console.log("direction", direction);
+              let childDirection = direction == "left" ? "right" : "left";
+              // console.log("direction", direction);
 
-            //計算容器
-            let childRect = this.findTitle(
-              childNode.children[0]
-            ).getBoundingClientRect();
-            let parentRect = this.findTitle(
-              parentNode.children[0]
-            ).getBoundingClientRect();
+              //計算容器
+              let childRect = this.findTitle(
+                childNode.children[0]
+              ).getBoundingClientRect();
+              let parentRect = this.findTitle(
+                parentNode.children[0]
+              ).getBoundingClientRect();
 
-            // 计算路径
-            let parentMidY = Math.floor(
-              parentRect.top + parentRect.height / 2 + window.scrollY
-            );
-            let childMidY = Math.floor(
-              childRect.top + childRect.height / 2 + window.scrollY
-            );
+              // 计算路径
+              let parentMidY = Math.floor(
+                parentRect.top + parentRect.height / 2 + window.scrollY
+              );
+              let childMidY = Math.floor(
+                childRect.top + childRect.height / 2 + window.scrollY
+              );
 
-            let parentMidX = Math.floor(parentRect[direction] + window.scrollX);
-            let childMidX = Math.floor(
-              childRect[childDirection] + window.scrollX
-            );
+              let parentMidX = Math.floor(
+                parentRect[direction] + window.scrollX
+              );
+              let childMidX = Math.floor(
+                childRect[childDirection] + window.scrollX
+              );
 
-            let midX = Math.floor((parentMidX + childMidX) / 2);
-            let midY = Math.floor((parentMidY + childMidY) / 2);
-            let path = "";
-            let M = parentMidX + " " + parentMidY; //出發的位置
+              let midX = Math.floor((parentMidX + childMidX) / 2);
+              let midY = Math.floor((parentMidY + childMidY) / 2);
+              let path = "";
+              let M = parentMidX + " " + parentMidY; //出發的位置
 
-            if (!this.repeatPath.has(M)) {
-              path =
-                `M ${parentMidX} ${parentMidY} ` + // 从父节点开始
-                `L ${midX} ${parentMidY} ` + // 水平到中间点
-                `L ${midX} ${childMidY} ` + // 垂直到子节点的水平位置
-                `L ${childMidX} ${childMidY}`; // 水平到子节点
+              if (!this.repeatPath.has(M)) {
+                path =
+                  `M ${parentMidX} ${parentMidY} ` + // 从父节点开始
+                  `L ${midX} ${parentMidY} ` + // 水平到中间点
+                  `L ${midX} ${childMidY} ` + // 垂直到子节点的水平位置
+                  `L ${childMidX} ${childMidY}`; // 水平到子节点
 
-              this.repeatPath.add(M);
-            } else {
-              path =
-                `M ${midX} ${parentMidY} ` + // 水平到中间点
-                `L ${midX} ${childMidY} ` + // 垂直到子节点的水平位置
-                `L ${childMidX} ${childMidY}`; // 水平到子节点
-            }
+                this.repeatPath.add(M);
+              } else {
+                path =
+                  `M ${midX} ${parentMidY} ` + // 水平到中间点
+                  `L ${midX} ${childMidY} ` + // 垂直到子节点的水平位置
+                  `L ${childMidX} ${childMidY}`; // 水平到子节点
+              }
 
-            // 添加路径到路径数组中
-            this.paths.push(path);
+              // 添加路径到路径数组中
+              this.paths.push(path);
 
-            // 添加圆形标记(因為左邊方向的關係線會壓到item，所以用rect蓋住)
-            let rectX =
-              Math.floor((childRect.right + childRect.left) / 2) +
-              window.scrollX;
-            let rectY =
-              Math.floor(
-                (childRect.top +
-                  childRect.height / 2 +
-                  childRect.top +
-                  childRect.height / 2) /
-                  2
-              ) + window.scrollY;
+              // 添加圆形标记(因為左邊方向的關係線會壓到item，所以用rect蓋住)
+              let rectX =
+                Math.floor((childRect.right + childRect.left) / 2) +
+                window.scrollX;
+              let rectY =
+                Math.floor(
+                  (childRect.top +
+                    childRect.height / 2 +
+                    childRect.top +
+                    childRect.height / 2) /
+                    2
+                ) + window.scrollY;
 
-            this.textRects.push({
-              x: rectX - 162 / 2,
-              y: rectY - 52 / 2,
-              width: 162,
-              height: 45,
-            });
+              this.textRects.push({
+                x: rectX - 162 / 2,
+                y: rectY - 52 / 2,
+                width: 162,
+                height: 45,
+              });
           },
           recursion(node, parentNode, mid) {
             //有mid代表是中間的node，中間的node要取node[0]
