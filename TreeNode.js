@@ -133,11 +133,12 @@ const TreeNode = {
         );
 
         if (checkChild) {
-          if (e.target.tagName == "H3") {
-            e.target.classList.add("target_node");
-          } else if (e.target.tagName == "SPAN") {
-            e.target.parentElement.classList.add("target_node");
-          }
+          // if (e.target.tagName == "H3") {
+          //   e.target.classList.add("target_node");
+          // } else if (e.target.tagName == "SPAN") {
+          //   e.target.parentElement.classList.add("target_node");
+          // }
+          e.target.classList.add("target_node");
         }
       }
     },
@@ -161,10 +162,13 @@ const TreeNode = {
 
         return;
       }
+
       if (this.currDropNode.id != this.node.id) {
         let obj = _.cloneDeep(this.currDropNode);
         //複製出來的id不需跟原本的一樣
         obj.id = generateUniqueId();
+
+        console.log(' e.target', e.target)
 
         this.node.children.push(obj);
         e.target.classList.remove("target_node");

@@ -222,6 +222,7 @@
               this.tree.left.children.push(obj);
             }
             this.update([this.dropNode.id, direction]);
+            console.log(e.target)
             e.target.classList.remove("target_node");
           },
           dragover(event) {
@@ -230,14 +231,16 @@
           },
           dragenter(event) {
             event.stopPropagation();
-            if (event.target.tagName == "H3") {
-              event.target.classList.add("target_node");
-            } else if (event.target.tagName == "SPAN") {
-              event.target.parentElement.classList.add("target_node");
-            }
+            // if (event.target.tagName == "H3") {
+            //   event.target.classList.add("target_node");
+            // } else if (event.target.tagName == "SPAN") {
+            //   event.target.parentElement.classList.add("target_node");
+            // }
+            event.target.classList.add("target_node");
           },
           dragleave(event) {
             event.stopPropagation();
+            console.log( event.target)
             event.target.classList.remove("target_node");
           },
           getCurrDropNode(node) {
@@ -328,12 +331,12 @@
                     2
                 ) + window.scrollY;
 
-              this.textRects.push({
-                x: rectX - 162 / 2,
-                y: rectY - 52 / 2,
-                width: 162,
-                height: 45,
-              });
+              // this.textRects.push({
+              //   x: rectX - 162 / 2,
+              //   y: rectY - 52 / 2,
+              //   width: 162,
+              //   height: 45,
+              // });
           },
           recursion(node, parentNode, mid) {
             //有mid代表是中間的node，中間的node要取node[0]
